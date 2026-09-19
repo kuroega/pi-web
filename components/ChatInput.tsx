@@ -1342,6 +1342,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
 
   return (
     <div
+      className="chat-composer"
       style={{
         flexShrink: 0,
         background: "transparent",
@@ -1361,7 +1362,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
           e.target.value = "";
         }}
       />
-      <div style={{ maxWidth: 820, margin: "0 auto" }}>
+      <div className="chat-composer-width" style={{ maxWidth: 820, margin: "0 auto" }}>
         <ModelErrorBanner error={modelError} />
         <ModelScopeWarningBanner warnings={modelScopeWarnings} />
         {/* Queued steering / follow-up messages (delivered by omp on upcoming turns) */}
@@ -1510,8 +1511,9 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
           </div>
         )}
 
+        <div className="chat-composer-surface">
         {/* Main input */}
-        <div ref={composerAnchorRef} style={{ position: "relative", minWidth: 0 }}>
+        <div ref={composerAnchorRef} className="chat-composer-anchor" style={{ position: "relative", minWidth: 0 }}>
           {historyMenuOpen && inputHistory.length > 0 && (
             <div
               ref={historyMenuRef}
@@ -1841,6 +1843,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             );
           })()}
           <div
+            className="chat-composer-card"
             style={{
               minWidth: 0,
               display: "flex",
@@ -1857,6 +1860,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             } as React.CSSProperties}
           >
           <textarea
+            className="chat-composer-textarea"
             ref={textareaRef}
             value={value}
             onChange={(e) => {
@@ -1958,6 +1962,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             </div>
           ) : (
             <button
+              className="chat-send-button"
               onClick={handleSend}
               disabled={!value.trim() && !attachedImages.length}
               style={{
@@ -1981,7 +1986,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                 <line x1="2" y1="7" x2="11" y2="7" />
                 <polyline points="7.5 3 12 7 7.5 11" />
               </svg>
-              {t("chat.send")}
+              <span className="chat-send-label">{t("chat.send")}</span>
             </button>
           )}
           </div>
@@ -2005,7 +2010,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
         )}
 
         {/* Bottom bar: left | center (context) | right */}
-        <div style={{
+        <div className="chat-composer-toolbar" style={{
           marginTop: 8,
           display: isMobile ? "grid" : "flex",
           gridTemplateColumns: isMobile ? "minmax(0, 1fr) auto" : undefined,
@@ -2712,6 +2717,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             </div>
           </div>
 
+        </div>
         </div>
       </div>
     </div>

@@ -989,7 +989,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
 
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+    <div className="session-sidebar-content" style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
       {customPathOpen && (
         <DirectoryPicker
           busy={customPathValidating}
@@ -1003,7 +1003,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
       )}
 
 
-      <div
+      <div className="session-sidebar-header"
         style={{
           padding: "12px 10px 10px",
           borderBottom: "1px solid var(--border)",
@@ -1014,6 +1014,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
           <PiWebTitle />
           <div style={{ display: "flex", gap: 6 }}>
             <button
+              className="session-new-button"
               onClick={() => handleNewSession()}
               disabled={!selectedCwd}
               style={{
@@ -1051,6 +1052,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
               {t("sidebar.new")}
             </button>
             <button
+              className="session-refresh-button"
               onClick={() => loadSessions(false, true)}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -1095,7 +1097,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
       </div>
 
 
-      <div
+      <div className="session-projects-heading"
         style={{
           display: "flex",
           alignItems: "center",
@@ -1157,6 +1159,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
             <path d="m20 20-3.5-3.5" />
           </svg>
           <input
+            className="session-search-input"
             type="search"
             value={projectFilter}
             onChange={(event) => setProjectFilter(event.target.value)}
@@ -1184,7 +1187,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
           />
         </label>
 
-      <div style={{ flex: explorerOpen && (selectedCwdProp || selectedCwd) ? "1 1 0" : "1 1 auto", overflowY: "auto", minHeight: 80, padding: "0 6px 10px" }}>
+      <div className="session-project-list" style={{ flex: explorerOpen && (selectedCwdProp || selectedCwd) ? "1 1 0" : "1 1 auto", overflowY: "auto", minHeight: 80, padding: "0 6px 10px" }}>
         {loading && (
           <div style={{ padding: "12px 8px", color: "var(--text-muted)", fontSize: 12 }}>
             {t("sidebar.loading")}

@@ -448,7 +448,7 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
 
   return (
     <div
-      className="relative flex h-full min-w-0 flex-col overflow-hidden"
+      className="chat-window relative flex h-full min-w-0 flex-col overflow-hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -502,8 +502,8 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
       )}
 
       {isEmptyNew ? (
-        <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8">
-          <div className="w-full max-w-[820px]">
+        <div className="chat-empty-state flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8">
+          <div className="chat-empty-inner w-full max-w-[820px]">
             <div
               className="mb-3"
               style={{
@@ -534,7 +534,7 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
         </div>
       ) : (
       <>
-      <div className="relative flex min-w-0 flex-1 overflow-hidden">
+      <div className="chat-conversation-stage relative flex min-w-0 flex-1 overflow-hidden">
         <div
           style={{
             position: "absolute",
@@ -552,7 +552,7 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
         </div>
         <div ref={scrollContainerRef} className="chat-session-scroll min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-4 [scrollbar-width:none]">
           <div style={{ minWidth: 0, padding: `0 ${CHAT_COLUMN_PADDING}px` }}>
-            <div style={{ width: "100%", minWidth: 0, maxWidth: 820, margin: "0 auto" }}>
+            <div className="chat-message-column" style={{ width: "100%", minWidth: 0, maxWidth: 820, margin: "0 auto" }}>
               <ExtensionWidgets widgets={aboveEditorWidgets} />
 
             {(() => {
@@ -774,7 +774,7 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
         )}
       </div>
 
-      <div className="relative">
+      <div className="chat-composer-dock relative">
         <div
           style={{
             padding: `0 ${CHAT_COLUMN_PADDING}px`,

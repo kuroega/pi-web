@@ -25,6 +25,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
 
   return (
     <div
+      className="tab-bar"
       style={{
         display: "flex",
         alignItems: "flex-end",
@@ -38,6 +39,8 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
         const isActive = tab.id === activeTabId;
         return (
           <div
+            className="tab-bar-item"
+            data-active={isActive}
             key={tab.id}
             onClick={() => onSelectTab(tab.id)}
             onMouseDown={(e) => {

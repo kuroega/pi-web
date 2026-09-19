@@ -164,6 +164,7 @@ Requests to loopback addresses are never proxied, so a local provider (Ollama, L
 - **Chat beside the project**: browse files on the left and preview source, docs, images, audio, and PDFs on the right while the agent works.
 - **See session state clearly**: context usage, cost, compaction state, and system prompt details are visible from the top bar.
 - **Configure less from the terminal**: manage providers, logins/API keys, model tests, plugins, and skill switches from the web UI.
+- **Reskin without a reload**: switch between the original interface, the built-in DSH skin, and editable custom skins; create, update, apply, and delete them from Settings → Skins.
 - **Use the interface in your language**: switch between the supported UI languages from the top bar.
 
 ## Screenshots
@@ -187,6 +188,8 @@ Requests to loopback addresses are never proxied, so a local provider (Ollama, L
 **Full omp theme support** — omp-web reads omp's own dark/light palette mappings from `~/.omp/agent/config.yml` and applies them live, so the web view matches the terminal.
 
 ![Theme settings showing omp's dark and light palette mapping](./docs/screenshots/05-themes.png)
+
+**Interface skins** — Settings → Skins manages complete UI skins independently from omp's light/dark palette mapping. The built-in DSH skin ports the DeepSeek Harness Web UI's surfaces, geometry, elevation, and motion; custom skins can inherit either visual foundation and override both color modes.
 
 ## Notes
 
@@ -315,6 +318,7 @@ components/
   ModelsConfig.tsx    # provider and auth configuration panel
   ModelRolesPanel.tsx # per-role model assignment
   SkillsConfig.tsx    # skill management panel
+  SkinConfig.tsx      # skin gallery, editor, CRUD, and one-click apply
   FileExplorer.tsx    # file tree
   FileViewer.tsx      # source, diff, image, audio, PDF, DOCX preview
 lib/
@@ -325,6 +329,7 @@ lib/
   omp-runtime.ts      # shared Settings + AuthStorage + ModelRegistry
   omp-types.ts        # structural view of omp's AgentSession
   project-trust.ts    # gates a project's executable resources
+  skin-store.ts       # validated built-in/custom skin persistence
   rpc-manager.ts      # AgentSessionWrapper lifecycle and global registry
   session-reader.ts   # parses .jsonl session files and branch contexts
   normalize.ts        # normalizes toolCall field names
@@ -336,6 +341,7 @@ hooks/
   useAudio.ts         # completion sound
   useDragDrop.ts      # image drag/drop
   useTheme.ts         # theme switching
+  useSkin.ts          # active skin bootstrap and instant DOM application
 bin/
   omp-web.js          # CLI entrypoint; re-executes the server under Bun
   runtime.js          # Node/Bun version checks and Bun discovery

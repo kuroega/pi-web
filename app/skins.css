@@ -1,0 +1,380 @@
+/* Shared skin runtime ------------------------------------------------------ */
+html[data-omp-skin-palette="fixed"] {
+  --bg: var(--skin-light-bg) !important;
+  --bg-panel: var(--skin-light-panel) !important;
+  --bg-hover: var(--skin-light-hover) !important;
+  --bg-selected: var(--skin-light-selected) !important;
+  --border: var(--skin-light-border) !important;
+  --text: var(--skin-light-text) !important;
+  --text-muted: var(--skin-light-muted) !important;
+  --text-dim: var(--skin-light-dim) !important;
+  --accent: var(--skin-light-accent) !important;
+  --accent-hover: var(--skin-light-accent-hover) !important;
+  --user-bg: var(--skin-light-user-bubble) !important;
+  --assistant-bg: var(--skin-light-bg) !important;
+  --tool-bg: var(--skin-light-tool-surface) !important;
+  --bg-subtle: color-mix(in srgb, var(--skin-light-text) 4%, transparent) !important;
+  --success: var(--skin-light-success) !important;
+  --danger: var(--skin-light-danger) !important;
+  --warning: var(--skin-light-warning) !important;
+  --font-mono: var(--skin-code-font-family) !important;
+}
+
+html.dark[data-omp-skin-palette="fixed"] {
+  --bg: var(--skin-dark-bg) !important;
+  --bg-panel: var(--skin-dark-panel) !important;
+  --bg-hover: var(--skin-dark-hover) !important;
+  --bg-selected: var(--skin-dark-selected) !important;
+  --border: var(--skin-dark-border) !important;
+  --text: var(--skin-dark-text) !important;
+  --text-muted: var(--skin-dark-muted) !important;
+  --text-dim: var(--skin-dark-dim) !important;
+  --accent: var(--skin-dark-accent) !important;
+  --accent-hover: var(--skin-dark-accent-hover) !important;
+  --user-bg: var(--skin-dark-user-bubble) !important;
+  --assistant-bg: var(--skin-dark-bg) !important;
+  --tool-bg: var(--skin-dark-tool-surface) !important;
+  --bg-subtle: color-mix(in srgb, var(--skin-dark-text) 5%, transparent) !important;
+  --success: var(--skin-dark-success) !important;
+  --danger: var(--skin-dark-danger) !important;
+  --warning: var(--skin-dark-warning) !important;
+}
+
+html[data-omp-skin-palette="fixed"] body {
+  font-family: var(--skin-font-family), sans-serif;
+}
+html[data-omp-skin-palette="fixed"] .message-user-bubble { border-radius: var(--skin-bubble-radius) !important; }
+html[data-omp-skin-palette="fixed"] .chat-composer-card { border-radius: var(--skin-composer-radius) !important; }
+html[data-omp-skin-palette="fixed"] [data-skin-part="settings-window"] { border-radius: var(--skin-panel-radius); }
+html[data-omp-skin-palette="fixed"] .sidebar-settings-button,
+html[data-omp-skin-palette="fixed"] .session-new-button,
+html[data-omp-skin-palette="fixed"] .session-refresh-button { border-radius: var(--skin-control-radius) !important; }
+
+
+/* DSH foundation ---------------------------------------------------------- */
+html[data-omp-skin-family="dsh"] {
+  --dsh-ease: cubic-bezier(.4, 0, .2, 1);
+  --dsh-fast: 100ms;
+  --dsh-normal: 200ms;
+  --dsh-slow: 300ms;
+  --dsh-hairline: color-mix(in srgb, var(--border) 58%, transparent);
+  --dsh-shadow-panel:
+    0 0 0 .5px color-mix(in srgb, var(--text) 8%, transparent),
+    0 3px 8px rgb(0 0 0 / calc(var(--skin-shadow-strength) * .08)),
+    0 0 16px rgb(0 0 0 / calc(var(--skin-shadow-strength) * .05));
+  --dsh-shadow-prominent:
+    0 0 0 .5px color-mix(in srgb, var(--text) 8%, transparent),
+    0 10px 30px rgb(0 0 0 / calc(var(--skin-shadow-strength) * .26)),
+    0 2px 10px rgb(0 0 0 / calc(var(--skin-shadow-strength) * .16));
+}
+
+html[data-omp-skin-family="dsh"] *,
+html[data-omp-skin-family="dsh"] *::before,
+html[data-omp-skin-family="dsh"] *::after {
+  scrollbar-color: color-mix(in srgb, var(--text-dim) 55%, transparent) transparent;
+}
+
+html[data-omp-skin-family="dsh"] ::-webkit-scrollbar { width: 8px; height: 8px; }
+html[data-omp-skin-family="dsh"] ::-webkit-scrollbar-track { background: transparent; }
+html[data-omp-skin-family="dsh"] ::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-dim) 55%, transparent);
+  background-clip: content-box;
+}
+html[data-omp-skin-family="dsh"] ::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--text-muted) 72%, transparent); }
+
+html[data-omp-skin-family="dsh"] .app-shell {
+  background: var(--bg) !important;
+  font-size: calc(14px * var(--skin-density));
+}
+
+html[data-omp-skin-family="dsh"] .sidebar-container {
+  border-right: .5px solid var(--dsh-hairline) !important;
+  background: var(--bg-panel) !important;
+  transition: width var(--dsh-slow) var(--dsh-ease), min-width var(--dsh-slow) var(--dsh-ease), transform var(--dsh-slow) var(--dsh-ease) !important;
+}
+
+html[data-omp-skin-family="dsh"] .session-sidebar-content { padding: 6px 10px 8px; }
+html[data-omp-skin-family="dsh"] .session-sidebar-header {
+  margin: 0 -2px 4px;
+  padding: 8px 2px 10px !important;
+  border-bottom: 0 !important;
+}
+html[data-omp-skin-family="dsh"] .session-sidebar-header > div:first-child { margin-bottom: 8px !important; }
+html[data-omp-skin-family="dsh"] .session-new-button {
+  height: 38px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: var(--skin-control-radius) !important;
+  background: var(--bg-hover) !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+  box-shadow: none !important;
+}
+html[data-omp-skin-family="dsh"] .session-new-button:hover:not(:disabled) {
+  background: var(--bg-selected) !important;
+  color: var(--accent) !important;
+  transform: translateY(-1px);
+}
+html[data-omp-skin-family="dsh"] .session-refresh-button {
+  width: 38px !important;
+  height: 38px !important;
+  border: 0 !important;
+  border-radius: var(--skin-control-radius) !important;
+  background: transparent !important;
+}
+html[data-omp-skin-family="dsh"] .session-refresh-button:hover { background: var(--bg-hover) !important; }
+html[data-omp-skin-family="dsh"] .session-projects-heading { min-height: 40px !important; padding: 5px 4px 3px !important; }
+html[data-omp-skin-family="dsh"] .session-projects-heading h2 { color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; }
+html[data-omp-skin-family="dsh"] .session-search-input {
+  height: 36px !important;
+  border: 0 !important;
+  border-radius: var(--skin-control-radius) !important;
+  background: var(--bg-hover) !important;
+  font-family: var(--skin-font-family) !important;
+  font-size: 12px !important;
+}
+html[data-omp-skin-family="dsh"] .session-search-input:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 26%, transparent); }
+html[data-omp-skin-family="dsh"] .session-project-list { padding: 0 0 10px !important; }
+html[data-omp-skin-family="dsh"] .session-project-list button,
+html[data-omp-skin-family="dsh"] .session-sidebar-content button {
+  transition: background var(--dsh-fast) var(--dsh-ease), color var(--dsh-fast) var(--dsh-ease), transform var(--dsh-fast) var(--dsh-ease) !important;
+}
+html[data-omp-skin-family="dsh"] .session-project-list section > button,
+html[data-omp-skin-family="dsh"] .session-project-list section > div button {
+  border-radius: var(--skin-control-radius) !important;
+}
+html[data-omp-skin-family="dsh"] .sidebar-settings-button {
+  height: 38px !important;
+  border: 0 !important;
+  border-radius: var(--skin-control-radius) !important;
+  background: transparent !important;
+  font-family: var(--skin-font-family) !important;
+}
+html[data-omp-skin-family="dsh"] .sidebar-settings-button:hover { background: var(--bg-hover) !important; }
+
+html[data-omp-skin-family="dsh"] .app-main { background: var(--bg); }
+html[data-omp-skin-family="dsh"] .app-topbar {
+  min-height: calc(52px + env(safe-area-inset-top));
+  height: calc(52px + env(safe-area-inset-top)) !important;
+  padding: env(safe-area-inset-top) 12px 0 !important;
+  border-bottom: .5px solid var(--dsh-hairline) !important;
+  background: var(--bg) !important;
+  gap: 2px;
+}
+html[data-omp-skin-family="dsh"] .app-topbar button {
+  min-width: 34px;
+  height: 34px !important;
+  margin: 0 1px;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  font-family: var(--skin-font-family) !important;
+  transition: background var(--dsh-fast) var(--dsh-ease), color var(--dsh-fast) var(--dsh-ease), transform var(--dsh-fast) var(--dsh-ease) !important;
+}
+html[data-omp-skin-family="dsh"] .app-topbar button:hover:not(:disabled) { background: var(--bg-hover) !important; color: var(--text) !important; }
+html[data-omp-skin-family="dsh"] .app-topbar button[aria-pressed="true"] { background: var(--bg-selected) !important; color: var(--accent) !important; }
+
+html[data-omp-skin-family="dsh"] .chat-content-layout,
+html[data-omp-skin-family="dsh"] .chat-session-column,
+html[data-omp-skin-family="dsh"] .chat-window { background: var(--bg); }
+html[data-omp-skin-family="dsh"] .chat-session-scroll { padding-top: 20px !important; }
+html[data-omp-skin-family="dsh"] .chat-message-column,
+html[data-omp-skin-family="dsh"] .chat-composer-width,
+html[data-omp-skin-family="dsh"] .chat-empty-inner { max-width: clamp(680px, 64vw, 920px) !important; }
+html[data-omp-skin-family="dsh"] .chat-message-column { padding-bottom: 14px; }
+html[data-omp-skin-family="dsh"] .message-row { margin-bottom: 20px !important; }
+html[data-omp-skin-family="dsh"] .message-user-row > div:first-child { max-width: 82% !important; }
+html[data-omp-skin-family="dsh"] .message-user-bubble {
+  padding: 10px 16px !important;
+  border: 0 !important;
+  border-radius: var(--skin-bubble-radius) !important;
+  background: var(--user-bg) !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+html[data-omp-skin-family="dsh"] .message-model-label {
+  margin: 0 0 7px !important;
+  color: var(--text-dim) !important;
+  font-size: 11px !important;
+}
+html[data-omp-skin-family="dsh"] .message-assistant-content { gap: 10px !important; }
+html[data-omp-skin-family="dsh"] .markdown-body { font-size: 14px; line-height: 1.7; }
+html[data-omp-skin-family="dsh"] .markdown-body h1,
+html[data-omp-skin-family="dsh"] .markdown-body h2,
+html[data-omp-skin-family="dsh"] .markdown-body h3 { letter-spacing: -.02em; }
+html[data-omp-skin-family="dsh"] .markdown-thinking,
+html[data-omp-skin-family="dsh"] .todo-checklist-preview,
+html[data-omp-skin-family="dsh"] .shell-output-preview {
+  border-color: var(--dsh-hairline);
+  border-radius: var(--skin-control-radius);
+  background: var(--tool-bg);
+}
+html[data-omp-skin-family="dsh"] .shell-output-panel { border-radius: 0 0 var(--skin-control-radius) var(--skin-control-radius); }
+html[data-omp-skin-family="dsh"] .shell-output-pending,
+html[data-omp-skin-family="dsh"] .markdown-thinking-status {
+  background: linear-gradient(90deg, var(--text-dim), var(--text), var(--text-dim));
+  background-size: 200% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: dsh-shimmer 1.4s linear infinite;
+}
+
+html[data-omp-skin-family="dsh"] .chat-composer-dock {
+  z-index: 25;
+  padding-top: 10px;
+  background: linear-gradient(180deg, transparent, var(--bg) 24px);
+}
+html[data-omp-skin-family="dsh"] .chat-composer { padding: 0 18px 10px !important; }
+html[data-omp-skin-family="dsh"] .chat-composer-surface {
+  overflow: visible;
+  border: .5px solid var(--dsh-hairline);
+  border-radius: var(--skin-composer-radius);
+  background: var(--skin-light-elevated);
+  box-shadow: var(--dsh-shadow-panel);
+  transition: border-color var(--dsh-normal) var(--dsh-ease), box-shadow var(--dsh-normal) var(--dsh-ease), transform var(--dsh-normal) var(--dsh-ease);
+}
+html.dark[data-omp-skin-family="dsh"] .chat-composer-surface { background: var(--skin-dark-elevated); }
+html[data-omp-skin-family="dsh"] .chat-composer-surface:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  box-shadow: var(--dsh-shadow-panel), 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+html[data-omp-skin-family="dsh"] .chat-composer-card {
+  min-height: 46px;
+  padding: 8px 10px 0 14px !important;
+  border: 0 !important;
+  border-radius: var(--skin-composer-radius) var(--skin-composer-radius) 0 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html[data-omp-skin-family="dsh"] .chat-composer-textarea { font-family: var(--skin-font-family) !important; font-size: 14px !important; line-height: 1.65 !important; }
+html[data-omp-skin-family="dsh"] .chat-composer-textarea::placeholder { color: var(--text-dim); }
+html[data-omp-skin-family="dsh"] .chat-send-button {
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  box-shadow: none !important;
+  transform: rotate(-90deg);
+}
+html[data-omp-skin-family="dsh"] .chat-send-button:not(:disabled):hover { background: var(--accent-hover) !important; transform: rotate(-90deg) scale(1.05); }
+html[data-omp-skin-family="dsh"] .chat-send-button:disabled { background: var(--bg-hover) !important; }
+html[data-omp-skin-family="dsh"] .chat-send-label { display: none; }
+html[data-omp-skin-family="dsh"] .chat-composer-toolbar { margin-top: 0 !important; padding: 2px 8px 6px; }
+html[data-omp-skin-family="dsh"] .chat-composer-toolbar button {
+  border-radius: var(--skin-control-radius) !important;
+  font-family: var(--skin-font-family) !important;
+}
+html[data-omp-skin-family="dsh"] .chat-empty-state { background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 35%); }
+html[data-omp-skin-family="dsh"] .chat-empty-inner { animation: dsh-hero-in var(--dsh-slow) var(--dsh-ease) both; }
+
+html[data-omp-skin-family="dsh"] [data-skin-part="settings-backdrop"] {
+  background: color-mix(in srgb, #000 42%, transparent);
+  backdrop-filter: blur(2px);
+  animation: dsh-fade-in var(--dsh-normal) var(--dsh-ease) both;
+}
+html[data-omp-skin-family="dsh"] [data-skin-part="settings-window"] {
+  border: .5px solid var(--dsh-hairline);
+  border-radius: var(--skin-panel-radius);
+  box-shadow: var(--dsh-shadow-prominent);
+  animation: dsh-dialog-in var(--dsh-normal) var(--dsh-ease) both;
+}
+html[data-omp-skin-family="dsh"] [data-skin-part="settings-sidebar"] { background: var(--bg-panel); }
+html[data-omp-skin-family="dsh"] [data-skin-part="settings-nav"] button { border-radius: var(--skin-control-radius); font-family: var(--skin-font-family); }
+html[data-omp-skin-family="dsh"] [data-skin-part="settings-content"] { background: var(--bg); }
+html[data-omp-skin-family="dsh"] [role="menu"],
+html[data-omp-skin-family="dsh"] .session-info-popover {
+  border: .5px solid var(--dsh-hairline) !important;
+  border-radius: var(--skin-panel-radius) !important;
+  background: var(--skin-light-elevated) !important;
+  box-shadow: var(--dsh-shadow-panel) !important;
+}
+html.dark[data-omp-skin-family="dsh"] [role="menu"],
+html.dark[data-omp-skin-family="dsh"] .session-info-popover { background: var(--skin-dark-elevated) !important; }
+
+html[data-omp-skin-family="dsh"] .tab-bar {
+  height: 42px !important;
+  align-items: center !important;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: .5px solid var(--dsh-hairline);
+  background: var(--bg) !important;
+}
+html[data-omp-skin-family="dsh"] .tab-bar-item {
+  height: 32px !important;
+  border: 0 !important;
+  border-radius: var(--skin-control-radius);
+  background: transparent !important;
+}
+html[data-omp-skin-family="dsh"] .tab-bar-item:hover { background: var(--bg-hover) !important; }
+html[data-omp-skin-family="dsh"] .tab-bar-item[data-active="true"] {
+  background: var(--bg-selected) !important;
+  box-shadow: inset 0 -2px var(--accent);
+}
+html[data-omp-skin-family="dsh"] .file-viewer-shell { background: var(--bg); }
+html[data-omp-skin-family="dsh"] .file-viewer-toolbar {
+  min-height: 46px;
+  border-bottom: .5px solid var(--dsh-hairline) !important;
+  background: var(--bg) !important;
+}
+html[data-omp-skin-family="dsh"] .file-viewer-mode-switch {
+  border-radius: 999px;
+  background: var(--bg-hover);
+}
+html[data-omp-skin-family="dsh"] .file-viewer-mode-button,
+html[data-omp-skin-family="dsh"] .file-viewer-icon-button { border-radius: var(--skin-control-radius) !important; }
+html[data-omp-skin-family="dsh"] .file-viewer-content { background: var(--bg) !important; }
+html[data-omp-skin-family="dsh"] .directory-picker-panel,
+html[data-omp-skin-family="dsh"] [role="dialog"]:not(.directory-picker-backdrop):not([data-skin-part="settings-window"]) {
+  border: .5px solid var(--dsh-hairline) !important;
+  border-radius: var(--skin-panel-radius) !important;
+  box-shadow: var(--dsh-shadow-prominent) !important;
+}
+
+html[data-omp-skin-family="dsh"] button:focus-visible,
+html[data-omp-skin-family="dsh"] input:focus-visible,
+html[data-omp-skin-family="dsh"] textarea:focus-visible,
+html[data-omp-skin-family="dsh"] select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 72%, transparent);
+  outline-offset: 2px;
+}
+
+@supports (corner-shape: superellipse(1.5)) {
+  html[data-omp-skin-family="dsh"] button,
+  html[data-omp-skin-family="dsh"] input,
+  html[data-omp-skin-family="dsh"] textarea,
+  html[data-omp-skin-family="dsh"] [role="dialog"],
+  html[data-omp-skin-family="dsh"] [role="menu"],
+  html[data-omp-skin-family="dsh"] .message-user-bubble,
+  html[data-omp-skin-family="dsh"] .chat-composer-card {
+    corner-shape: superellipse(1.5);
+  }
+}
+
+@keyframes dsh-fade-in { from { opacity: 0; } }
+@keyframes dsh-dialog-in { from { opacity: 0; transform: translateY(8px) scale(.985); } }
+@keyframes dsh-hero-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes dsh-shimmer { to { background-position: -200% 0; } }
+
+@media (max-width: 640px) {
+  html[data-omp-skin-family="dsh"] .app-topbar { padding-right: 6px !important; padding-left: 6px !important; }
+  html[data-omp-skin-family="dsh"] .chat-message-column,
+  html[data-omp-skin-family="dsh"] .chat-composer-width,
+  html[data-omp-skin-family="dsh"] .chat-empty-inner { max-width: 100% !important; }
+  html[data-omp-skin-family="dsh"] .message-user-row > div:first-child { max-width: 88% !important; }
+  html[data-omp-skin-family="dsh"] .chat-composer { padding-right: 10px !important; padding-left: 10px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-omp-skin-family="dsh"] *,
+  html[data-omp-skin-family="dsh"] *::before,
+  html[data-omp-skin-family="dsh"] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

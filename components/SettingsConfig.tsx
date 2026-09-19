@@ -5,6 +5,7 @@ import { ModelsConfig } from "./ModelsConfig";
 import { SkillsConfig } from "./SkillsConfig";
 import { PluginsConfig } from "./PluginsConfig";
 import { AccessConfig } from "./AccessConfig";
+import { SkinConfig } from "./SkinConfig";
 import { SearchableSelect } from "./SearchableSelect";
 import { refreshOmpTheme, useTheme } from "@/hooks/useTheme";
 import { refreshDisplaySettings } from "@/hooks/useDisplaySettings";
@@ -21,7 +22,7 @@ import type {
 } from "@/lib/settings-api";
 import styles from "./SettingsConfig.module.css";
 
-type SettingsSection = "models" | "themes" | "skills" | "plugins" | "mcp" | "access" | `settings:${string}`;
+type SettingsSection = "models" | "themes" | "skins" | "skills" | "plugins" | "mcp" | "access" | `settings:${string}`;
 
 interface SettingsConfigProps {
   cwd?: string | null;
@@ -35,6 +36,7 @@ interface SettingsConfigProps {
 const CORE_SECTIONS: Array<{ id: SettingsSection; label: string; icon: string; requiresCwd?: boolean }> = [
   { id: "models", label: "Models", icon: "model" },
   { id: "themes", label: "Themes", icon: "theme" },
+  { id: "skins", label: "Skins", icon: "skin" },
   { id: "skills", label: "Skills", icon: "skill", requiresCwd: true },
   { id: "plugins", label: "Plugins", icon: "plugin", requiresCwd: true },
   { id: "mcp", label: "MCP", icon: "mcp" },
@@ -44,6 +46,7 @@ const CORE_SECTIONS: Array<{ id: SettingsSection; label: string; icon: string; r
 const ICON_PATHS: Record<string, React.ReactNode> = {
   model: <><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM9 1v3m6-3v3M9 20v3m6-3v3M1 9h3m16 0h3M1 15h3m16 0h3"/></>,
   theme: <><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z"/></>,
+  skin: <><path d="M4 5.5h16v13H4z"/><path d="M4 10h16M9 10v8.5"/><circle cx="14.5" cy="14.25" r="1.75"/></>,
   skill: <><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4"/></>,
   plugin: <><path d="M8 3v5m8-5v5M6 8h12v5a6 6 0 0 1-12 0V8Zm6 11v3"/></>,
   mcp: <><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M8 7.5 11 16m5-8.5L13 16M8 6h8"/></>,
@@ -326,12 +329,12 @@ export function SettingsConfig({ cwd, sessionId, initialSection = "models", onCl
   };
 
   return (
-    <div className={styles.backdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-      <div className={styles.window} role="dialog" aria-modal="true" aria-label="Settings">
-        <aside className={styles.sidebar}>
+    <div className={styles.backdrop} data-skin-part="settings-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+      <div className={styles.window} data-skin-part="settings-window" role="dialog" aria-modal="true" aria-label="Settings">
+        <aside className={styles.sidebar} data-skin-part="settings-sidebar">
           <div className={styles.brand}><div className={styles.eyebrow}>omp /settings</div><h1 className={styles.title}>Settings</h1><code className={styles.context} title={cwd ?? "Global configuration"}>{cwd ?? "Global configuration"}</code></div>
           <div className={styles.searchWrap}><svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input className={styles.search} value={query} placeholder="Search /settings" onChange={(event) => setQuery(event.target.value)} /></div>
-          <nav className={styles.nav}>
+          <nav className={styles.nav} data-skin-part="settings-nav">
             <div className={styles.navLabel}>Configuration</div>
             {CORE_SECTIONS.map((item) => <button key={item.id} type="button" className={styles.navButton} data-active={!query && section === item.id} disabled={item.requiresCwd && !cwd} title={item.requiresCwd && !cwd ? `${item.label} requires a project` : item.label} onClick={() => { setQuery(""); setSection(item.id); }}><SettingsIcon kind={item.icon}/><span>{item.label}</span></button>)}
             <div className={styles.navLabel}>OMP settings</div>
@@ -339,8 +342,8 @@ export function SettingsConfig({ cwd, sessionId, initialSection = "models", onCl
           </nav>
           <div className={styles.closeRail}><button type="button" className={styles.closeButton} onClick={close}><span>Close settings</span><span aria-hidden="true">×</span></button></div>
         </aside>
-        <main className={styles.content}>
-          {query.trim() ? renderGenericSettings() : section === "models" ? <ModelsConfig cwd={cwd} embedded onClose={close} onModelsChanged={onModelsChanged} /> : section === "themes" ? renderThemeSection() : section === "skills" && cwd ? <SkillsConfig cwd={cwd} embedded onClose={close} /> : section === "plugins" && cwd ? <PluginsConfig cwd={cwd} sessionId={sessionId} embedded onClose={close} onReloaded={onReloaded} /> : section === "mcp" ? <McpSettings cwd={cwd} sessionId={sessionId} onReloaded={onReloaded} /> : section === "access" ? <AccessConfig /> : renderGenericSettings()}
+        <main className={styles.content} data-skin-part="settings-content">
+          {query.trim() ? renderGenericSettings() : section === "models" ? <ModelsConfig cwd={cwd} embedded onClose={close} onModelsChanged={onModelsChanged} /> : section === "themes" ? renderThemeSection() : section === "skins" ? <SkinConfig /> : section === "skills" && cwd ? <SkillsConfig cwd={cwd} embedded onClose={close} /> : section === "plugins" && cwd ? <PluginsConfig cwd={cwd} sessionId={sessionId} embedded onClose={close} onReloaded={onReloaded} /> : section === "mcp" ? <McpSettings cwd={cwd} sessionId={sessionId} onReloaded={onReloaded} /> : section === "access" ? <AccessConfig /> : renderGenericSettings()}
         </main>
       </div>
     </div>
