@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import type { CreateSkinInput, SkinDefinition, SkinStateResponse, UpdateSkinInput } from "@/lib/skin-types";
 import { SKIN_COLOR_KEYS } from "@/lib/skin-types";
+import { runAfterCriticalStartup } from "@/lib/startup-priority";
 
 const CACHE_KEY = "omp-ui-skin";
 const listeners = new Set<() => void>();
@@ -82,10 +83,12 @@ export function useSkin() {
         const cached = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "null") as SkinDefinition | null;
         if (cached?.id) applySkinToDocument(cached);
       } catch {
-        // The server response below remains authoritative.
+        // The delayed server response below remains authoritative.
       }
     }
-    void refreshSkins().catch(() => undefined);
+    return runAfterCriticalStartup(() => {
+      void refreshSkins().catch(() => undefined);
+    });
   }, []);
 
   const create = useCallback((input: CreateSkinInput) => requestState("POST", input), []);

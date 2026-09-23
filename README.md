@@ -44,14 +44,14 @@ New-Item -ItemType Directory -Force $env:BUN_INSTALL_CACHE_DIR | Out-Null
 bunx omp-web@latest
 ```
 
-If an antivirus or endpoint-security process still holds the extracted directory open, use npm for dependency installation; the `omp-web` launcher still starts the server through Bun:
+On Windows, use npm for a global install when `omp` is already installed through Bun. Bun stores global packages in one dependency tree, so independently installed `omp` and `omp-web` releases can otherwise resolve different `@oh-my-pi/pi-natives` loaders against the same platform binary. The `omp-web` launcher still starts the server through Bun:
 
 ```powershell
 npm install -g omp-web@latest
 omp-web
 ```
 
-**Or install globally:**
+On other platforms, either package manager works:
 
 ```bash
 bun add -g omp-web    # or: npm install -g omp-web

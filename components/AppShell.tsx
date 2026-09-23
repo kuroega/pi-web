@@ -2,14 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { SessionSidebar } from "./SessionSidebar";
-import { SubagentPanel } from "./SubagentPanel";
-import { ChatWindow } from "./ChatWindow";
-import { FileViewer } from "./FileViewer";
 import { TabBar, type Tab } from "./TabBar";
-import { SettingsConfig } from "./SettingsConfig";
-import { ProjectTrustDialog } from "./ProjectTrustDialog";
 import { OmpUpdateIndicator } from "./OmpUpdateIndicator";
 import { BranchNavigator } from "./BranchNavigator";
 import { useTheme } from "@/hooks/useTheme";
@@ -43,7 +39,27 @@ import {
 import type { BlockingExtensionUiRequest, SessionInfo, SessionTreeNode, SubagentSnapshot } from "@/lib/types";
 import type { ProjectTrustStatus } from "@/lib/api-types";
 import type { ChatInputHandle } from "./ChatInput";
+import { SettingsConfig } from "./SettingsConfig";
+import { runAfterCriticalStartup } from "@/lib/startup-priority";
 import type { SessionStatsInfo } from "@/lib/omp-types";
+
+const ChatWindow = dynamic(
+  () => import("./ChatWindow").then((module) => module.ChatWindow),
+  { ssr: false },
+);
+
+const SubagentPanel = dynamic(
+  () => import("./SubagentPanel").then((module) => module.SubagentPanel),
+  { ssr: false },
+);
+const FileViewer = dynamic(
+  () => import("./FileViewer").then((module) => module.FileViewer),
+  { ssr: false },
+);
+const ProjectTrustDialog = dynamic(
+  () => import("./ProjectTrustDialog").then((module) => module.ProjectTrustDialog),
+  { ssr: false },
+);
 
 type SessionCopyField = "file" | "id";
 type AutoNameStatus =
@@ -284,9 +300,11 @@ export function AppShell() {
 
   const initialSessionId = initialNavigation.sessionId;
   const [activeCwd, setActiveCwd] = useState<string | null>(null);
+  const [startupSyncEnabled, setStartupSyncEnabled] = useState(false);
+  useEffect(() => runAfterCriticalStartup(() => setStartupSyncEnabled(true)), []);
   useTheme({
     cwd: selectedSession?.cwd ?? newSessionCwd ?? activeCwd,
-    syncWithOmp: true,
+    syncWithOmp: startupSyncEnabled,
   });
   const activeProjectRootRef = useRef<string | null>(null);
   // True once the initial ?session= URL param has been resolved (or confirmed absent)
@@ -732,6 +750,7 @@ export function AppShell() {
     setProjectTrustDialogOpen(false);
     setProjectTrustError(null);
     if (!projectTrustCwd) return;
+    if (!startupSyncEnabled) return;
 
     const controller = new AbortController();
     fetch(`/api/project-trust?cwd=${encodeURIComponent(projectTrustCwd)}`, {
@@ -747,7 +766,7 @@ export function AppShell() {
         console.error("Failed to load project trust:", error);
       });
     return () => controller.abort();
-  }, [projectTrustCwd]);
+  }, [projectTrustCwd, startupSyncEnabled]);
 
   const handleTrustProject = useCallback(async () => {
     if (!projectTrustCwd || projectTrustBusy) return;
@@ -951,6 +970,23 @@ export function AppShell() {
       >
         {sidebarContent}
       </div>
+      <div
+        className={`dsh-sidebar-rail${sidebarOpen ? " is-hidden" : ""}`}
+        style={{ display: "none" }}
+        aria-hidden={sidebarOpen}
+      >
+        <button
+          type="button"
+          onClick={handleSidebarToggle}
+          title={translate("sidebar.show")}
+          aria-label={translate("sidebar.show")}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+        </button>
+      </div>
       {sidebarOpen && (
         <div
           {...sidebarResizer.separatorProps}
@@ -1109,7 +1145,7 @@ export function AppShell() {
             </button>
           )}
           {showChat && (
-            <div style={{ display: "flex", alignItems: "stretch", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", alignSelf: "stretch", height: "100%" }}>
               <button
                 onClick={handleViewFullHistory}
                 disabled={!selectedSession}
@@ -1119,11 +1155,11 @@ export function AppShell() {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  height: "100%",
+                  height: TOP_BAR_ICON_BUTTON_SIZE,
                   padding: "0 12px",
                   background: "none",
                   border: "none",
-                  borderTop: "2px solid transparent",
+                  borderTop: "none",
                   borderRight: "1px solid var(--border)",
                   color: selectedSession ? "var(--text-muted)" : "var(--text-dim)",
                   cursor: selectedSession ? "pointer" : "not-allowed",
@@ -1196,9 +1232,9 @@ export function AppShell() {
                     aria-label={label}
                     style={{
                       display: "flex", alignItems: "center", gap: 6,
-                      height: "100%", padding: "0 12px",
+                      height: TOP_BAR_ICON_BUTTON_SIZE, padding: "0 12px",
                       background: "none", border: "none",
-                      borderTop: "2px solid transparent",
+                      borderTop: "none",
                       borderRight: "1px solid var(--border)",
                       color: isError ? "#dc2626" : isSuccess ? "var(--accent)" : disabled ? "var(--text-dim)" : "var(--text-muted)",
                       cursor: disabled ? "not-allowed" : "pointer",
@@ -1255,10 +1291,11 @@ export function AppShell() {
                 aria-pressed={activeTopPanel === "system"}
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
-                  height: "100%", padding: "0 12px",
+                  height: TOP_BAR_ICON_BUTTON_SIZE, padding: "0 12px",
                   background: activeTopPanel === "system" ? "var(--bg-selected)" : "none",
                   border: "none",
-                  borderTop: activeTopPanel === "system" ? "2px solid var(--accent)" : "2px solid transparent",
+                  borderTop: "none",
+                  boxShadow: activeTopPanel === "system" ? "inset 0 2px 0 var(--accent)" : "none",
                   borderRight: "1px solid var(--border)",
                   cursor: "pointer",
                   color: activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)",
@@ -1746,7 +1783,7 @@ export function AppShell() {
         } as React.CSSProperties}
       >
         {/* Right panel tab bar */}
-        <div style={{
+        <div className="right-panel-header" style={{
           display: "flex",
           alignItems: "center",
           flexShrink: 0,

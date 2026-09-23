@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/hooks/useI18n";
 import { copyText } from "@/lib/clipboard";
 import type { OmpWebUpdateResponse } from "@/lib/api-types";
+import { runAfterCriticalStartup } from "@/lib/startup-priority";
 import { MarkdownBody } from "./MarkdownBody";
 
 type LoadState = "idle" | "loading" | "ready";
@@ -66,8 +67,11 @@ export function OmpUpdateIndicator() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadStatus(controller.signal);
-    return () => controller.abort();
+    const cancel = runAfterCriticalStartup(() => void loadStatus(controller.signal));
+    return () => {
+      cancel();
+      controller.abort();
+    };
   }, [loadStatus]);
 
   useEffect(() => () => {

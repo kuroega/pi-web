@@ -61,6 +61,26 @@ test("keeps the model selector visible when a model error leaves no options", ()
   assert.match(html, /title="No available models"/);
 });
 
+test("keeps the model selector visible while the catalog loads", () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      I18nProvider,
+      null,
+      React.createElement(ChatInput, {
+        onSend() {},
+        onAbort() {},
+        onModelChange() {},
+        isStreaming: false,
+        modelList: [],
+        modelNames: {},
+      }),
+    ),
+  );
+
+  assert.match(html, />Select model</);
+  assert.match(html, /title="Models are loading"/);
+});
+
 test("shows and locks the optimistic model while a switch is pending", () => {
   const html = renderToStaticMarkup(
     React.createElement(

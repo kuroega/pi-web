@@ -368,13 +368,14 @@ function UserMessageView({ message, cwd, onOpenFile, entryId, onFork, forking, o
           display: "flex", alignItems: "center", justifyContent: "flex-end",
           gap: 6, marginTop: 3,
         }}>
-          <div style={{
+          <div className="message-actions" style={{
             display: "flex", gap: 3,
             opacity: hovered ? 1 : 0,
             pointerEvents: hovered ? "auto" : "none",
             transition: "opacity 0.12s",
           }}>
             <button
+              className="message-action-button"
               onClick={copyContent}
                title={t("i18n.copyMessage")}
               style={{
@@ -405,7 +406,7 @@ function UserMessageView({ message, cwd, onOpenFile, entryId, onFork, forking, o
             </button>
           </div>
           {(canFork || canNavigate) && (
-            <div style={{
+            <div className="message-actions" style={{
               display: "flex", gap: 3,
               opacity: (hovered || forking) ? 1 : 0,
               pointerEvents: (hovered || forking) ? "auto" : "none",
@@ -413,6 +414,7 @@ function UserMessageView({ message, cwd, onOpenFile, entryId, onFork, forking, o
             }}>
               {canNavigate && (
                 <button
+                  className="message-action-button"
                   onClick={() => { onNavigate!(prevAssistantEntryId!); onEditContent?.(message); }}
                    title={t("i18n.editFromHereTitle")}
                   style={{
@@ -438,6 +440,7 @@ function UserMessageView({ message, cwd, onOpenFile, entryId, onFork, forking, o
               )}
               {canFork && (
                 <button
+                  className="message-action-button"
                   onClick={() => { onFork!(entryId!); }}
                   disabled={forking}
                    title={forking ? t("i18n.creatingSession") : t("i18n.newSessionTitle")}
@@ -706,7 +709,7 @@ function AssistantMessageView({
         <TurnWrittenFiles files={writtenFiles} onOpenFile={onOpenFile} />
       )}
 
-      <div style={{
+      <div className="message-actions-row" style={{
         display: "flex", alignItems: "center", gap: 8, marginTop: 4,
       }}>
         {message.usage && !isStreaming && (
@@ -716,6 +719,7 @@ function AssistantMessageView({
         )}
         {textContent && !isStreaming && (
           <button
+            className="message-action-button"
             onClick={copyContent}
              title={t("i18n.copyMessage")}
             style={{

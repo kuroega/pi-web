@@ -182,9 +182,8 @@ function startServer() {
       browserOpened = true;
       const isWindows = process.platform === "win32";
       const isMac = process.platform === "darwin";
-      const openCmd = isWindows ? "start" : isMac ? "open" : "xdg-open";
+      const openCmd = isWindows ? "explorer.exe" : isMac ? "open" : "xdg-open";
       const opener = spawn(openCmd, [url], {
-        shell: isWindows,
         stdio: "ignore",
         detached: true,
       });

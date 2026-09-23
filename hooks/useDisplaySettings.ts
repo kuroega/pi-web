@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import type { DisplaySettings } from "@/lib/settings-api";
+import { runAfterCriticalStartup } from "@/lib/startup-priority";
 
 const DEFAULTS: DisplaySettings = { hideThinkingBlock: false };
 
@@ -59,10 +60,10 @@ export function useDisplaySettings(): DisplaySettings {
 export function useSyncedDisplaySettings(cwd?: string | null): DisplaySettings {
   const snapshot = useDisplaySettings();
 
-  useEffect(() => {
+  useEffect(() => runAfterCriticalStartup(() => {
     // Keep the last known values when the read fails; they are only cosmetic.
     void refreshDisplaySettings(cwd).catch(() => {});
-  }, [cwd]);
+  }), [cwd]);
 
   return snapshot;
 }

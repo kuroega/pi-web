@@ -77,10 +77,27 @@ async function fetchTriple(triple, version) {
   try {
     await Bun.write(zipPath, new Uint8Array(await res.arrayBuffer()));
 
-    // bsdtar handles zip archives on macOS and Windows.
-    const tar = spawnSync("tar", ["-xf", zipPath, "-C", extractDir], { encoding: "utf8" });
-    if (tar.status !== 0) {
-      throw new Error(`tar extraction failed: ${tar.stderr || tar.stdout || "unknown error"}`);
+    // On Windows, Git Bash's tar can misinterpret drive-letter paths as
+    // remote archive names (for example, `C:\\Users\\...`). Use the native
+    // PowerShell zip extractor there; tar remains the portable path elsewhere.
+    let extraction;
+    if (process.platform === "win32") {
+      const quotePowerShell = (value) => `'${value.replaceAll("'", "''")}'`;
+      extraction = spawnSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-Command",
+          `Expand-Archive -LiteralPath ${quotePowerShell(zipPath)} -DestinationPath ${quotePowerShell(extractDir)} -Force`,
+        ],
+        { encoding: "utf8" },
+      );
+    } else {
+      extraction = spawnSync("tar", ["-xf", zipPath, "-C", extractDir], { encoding: "utf8" });
+    }
+    if (extraction.status !== 0) {
+      throw new Error(`archive extraction failed: ${extraction.stderr || extraction.stdout || "unknown error"}`);
     }
 
     const inner = join(extractDir, `bun-${triple}`, isWindows ? "bun.exe" : "bun");

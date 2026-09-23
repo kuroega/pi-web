@@ -19,6 +19,7 @@ import { isPromptRejectedError, sendAgentCommand } from "@/lib/agent-client";
 import { getToolNamesForPreset, type ToolEntry } from "@/lib/tool-presets";
 import type { ContextUsage, GoalStatusInfo, SessionStatsInfo, SlashCommandInfo } from "@/lib/omp-types";
 import type { ModelRoleAssignment } from "@/lib/api-types";
+import { markCriticalStartupReady } from "@/lib/startup-priority";
 
 export interface SessionData {
   sessionId: string;
@@ -447,6 +448,8 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   const contextUsageRequestIdRef = useRef(0);
   const optimisticUserMessageKeyRef = useRef<string | null>(null);
   const modelSwitchPendingRef = useRef(false);
+  const modelsLoadGenerationRef = useRef(0);
+  const modelsRequestRef = useRef<{ url: string; promise: Promise<ModelsResponse> } | null>(null);
 
   const setToolPresetState = opts.setToolPreset ?? setToolPreset;
 
@@ -1735,12 +1738,27 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     }
   }, [isCompacting, loadSession]);
 
-  const loadModels = useCallback(async (signal?: AbortSignal) => {
+  const loadModels = useCallback(async () => {
+    const generation = ++modelsLoadGenerationRef.current;
     const modelCwd = newSessionCwd ?? session?.cwd ?? "";
     const modelsUrl = modelCwd ? `/api/models?cwd=${encodeURIComponent(modelCwd)}` : "/api/models";
-    const res = await fetch(modelsUrl, signal ? { signal } : undefined);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const d = await res.json() as ModelsResponse;
+    let request = modelsRequestRef.current;
+    if (!request || request.url !== modelsUrl) {
+      const promise = fetch(modelsUrl).then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json() as Promise<ModelsResponse>;
+      });
+      request = { url: modelsUrl, promise };
+      modelsRequestRef.current = request;
+    }
+    const { promise } = request;
+    let d: ModelsResponse;
+    try {
+      d = await promise;
+    } finally {
+      if (modelsRequestRef.current?.promise === promise) modelsRequestRef.current = null;
+    }
+    if (generation !== modelsLoadGenerationRef.current) return;
     setModelNames(d.models);
     setModelError(d.modelError ?? null);
     setModelScopeWarnings(d.modelScopeWarnings ?? []);
@@ -1749,6 +1767,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     setModelRoles(d.roles ?? []);
     const nextModelList = d.modelList ?? [];
     setModelList(nextModelList);
+    markCriticalStartupReady();
     if (isNew && !sessionIdRef.current) {
       const match = d.defaultModel
         ? nextModelList.find((m) => m.id === d.defaultModel?.modelId && m.provider === d.defaultModel?.provider)
@@ -2195,13 +2214,15 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     }
   }, [messages.length, agentRunning, bashRunning, scrollToBottom]);
 
-  // Load model list
+  // Let the catalog request finish across React effect replays and shell
+  // remounts. A generation guard above prevents an older response from
+  // overwriting a newer cwd/refresh request.
   useEffect(() => {
-    const controller = new AbortController();
-    loadModels(controller.signal).catch((e) => {
-      if (e instanceof DOMException && e.name === "AbortError") return;
+    void loadModels().catch((error: unknown) => {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setModelError(error instanceof Error ? error.message : String(error));
+      markCriticalStartupReady();
     });
-    return () => controller.abort();
   }, [loadModels, modelsRefreshKey]);
 
   useEffect(() => {

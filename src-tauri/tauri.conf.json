@@ -35,6 +35,7 @@
       "./server/node_modules": "node_modules",
       "./server/.next": ".next",
       "./server/bin": "bin",
+      "./server/lib": "lib",
       "./server/public": "public",
       "./server/next.config.ts": "next.config.ts",
       "./server/package.json": "package.json"

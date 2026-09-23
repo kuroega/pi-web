@@ -22,7 +22,7 @@ import type {
 } from "@/lib/settings-api";
 import styles from "./SettingsConfig.module.css";
 
-type SettingsSection = "models" | "themes" | "skins" | "skills" | "plugins" | "mcp" | "access" | `settings:${string}`;
+type SettingsSection = "models" | "themes" | "skins" | "skills" | "plugins" | "mcp" | "access" | "network" | `settings:${string}`;
 
 interface SettingsConfigProps {
   cwd?: string | null;
@@ -40,6 +40,7 @@ const CORE_SECTIONS: Array<{ id: SettingsSection; label: string; icon: string; r
   { id: "skills", label: "Skills", icon: "skill", requiresCwd: true },
   { id: "plugins", label: "Plugins", icon: "plugin", requiresCwd: true },
   { id: "mcp", label: "MCP", icon: "mcp" },
+  { id: "network", label: "Proxy", icon: "network" },
   { id: "access", label: "Access", icon: "access" },
 ];
 
@@ -50,6 +51,7 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
   skill: <><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4"/></>,
   plugin: <><path d="M8 3v5m8-5v5M6 8h12v5a6 6 0 0 1-12 0V8Zm6 11v3"/></>,
   mcp: <><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M8 7.5 11 16m5-8.5L13 16M8 6h8"/></>,
+  network: <><circle cx="12" cy="12" r="3"/><path d="M12 2v7m0 6v7M2 12h7m6 0h7"/><circle cx="12" cy="12" r="9"/></>,
   access: <><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2"/></>,
   appearance: <><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></>,
   interaction: <><path d="M4 5h16v11H9l-5 4V5Z"/><path d="M8 9h8m-8 3h5"/></>,
@@ -189,6 +191,65 @@ function ThemePreview({ palette }: { palette: WebThemePalette }) {
 
 /** Settings the web client applies itself, without reloading the agent. */
 const DISPLAY_SETTING_PATHS = new Set(["hideThinkingBlock"]);
+function NetworkProxySettings() {
+  const [proxy, setProxy] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/network-proxy", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as { proxy?: string | null; error?: string };
+        if (!response.ok) throw new Error(data.error ?? `HTTP ${response.status}`);
+        setProxy(data.proxy ?? "");
+      })
+      .catch((error) => setMessage(error instanceof Error ? error.message : String(error)))
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/network-proxy", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proxy: proxy.trim() || null }),
+      });
+      const data = await response.json() as { proxy?: string | null; error?: string };
+      if (!response.ok || data.error) throw new Error(data.error ?? `HTTP ${response.status}`);
+      setProxy(data.proxy ?? "");
+      setMessage("Saved. New requests use this proxy; local and loopback hosts bypass it.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className={styles.scrollContent}>
+      <header className={styles.contentHeader}>
+        <h2 className={styles.contentTitle}>Proxy management</h2>
+        <p className={styles.contentDescription}>Route server-side model, OAuth, and discovery requests through a local HTTP proxy. Leave empty to disable this override.</p>
+      </header>
+      <div className={styles.settingsBody}>
+        <section className={styles.group}>
+          <h3 className={styles.groupTitle}>Proxy</h3>
+          <div className={styles.settingRow}>
+            <div><div className={styles.settingLabel}>Proxy URL</div><div className={styles.settingDescription}>For example http://127.0.0.1:7890. HTTPS proxy URLs are also supported.</div></div>
+            <div className={styles.settingControl}>
+              <input className={styles.textInput} value={proxy} disabled={!loaded || saving} placeholder="http://127.0.0.1:7890" onChange={(event) => setProxy(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void save(); }} />
+            </div>
+          </div>
+          <div className={styles.editorActions}><span className={message?.startsWith("Saved") ? styles.saveState : styles.error}>{message}</span><button type="button" className={styles.primaryButton} disabled={!loaded || saving} onClick={() => void save()}>{saving ? "Saving…" : "Save proxy"}</button></div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 
 export function SettingsConfig({ cwd, sessionId, initialSection = "models", onClose, onModelsChanged, onReloaded }: SettingsConfigProps) {
   const [section, setSection] = useState<SettingsSection>(initialSection);
@@ -343,7 +404,7 @@ export function SettingsConfig({ cwd, sessionId, initialSection = "models", onCl
           <div className={styles.closeRail}><button type="button" className={styles.closeButton} onClick={close}><span>Close settings</span><span aria-hidden="true">×</span></button></div>
         </aside>
         <main className={styles.content} data-skin-part="settings-content">
-          {query.trim() ? renderGenericSettings() : section === "models" ? <ModelsConfig cwd={cwd} embedded onClose={close} onModelsChanged={onModelsChanged} /> : section === "themes" ? renderThemeSection() : section === "skins" ? <SkinConfig /> : section === "skills" && cwd ? <SkillsConfig cwd={cwd} embedded onClose={close} /> : section === "plugins" && cwd ? <PluginsConfig cwd={cwd} sessionId={sessionId} embedded onClose={close} onReloaded={onReloaded} /> : section === "mcp" ? <McpSettings cwd={cwd} sessionId={sessionId} onReloaded={onReloaded} /> : section === "access" ? <AccessConfig /> : renderGenericSettings()}
+          {query.trim() ? renderGenericSettings() : section === "models" ? <ModelsConfig cwd={cwd} embedded onClose={close} onModelsChanged={onModelsChanged} /> : section === "themes" ? renderThemeSection() : section === "skins" ? <SkinConfig /> : section === "skills" && cwd ? <SkillsConfig cwd={cwd} embedded onClose={close} /> : section === "plugins" && cwd ? <PluginsConfig cwd={cwd} sessionId={sessionId} embedded onClose={close} onReloaded={onReloaded} /> : section === "mcp" ? <McpSettings cwd={cwd} sessionId={sessionId} onReloaded={onReloaded} /> : section === "network" ? <NetworkProxySettings /> : section === "access" ? <AccessConfig /> : renderGenericSettings()}
         </main>
       </div>
     </div>

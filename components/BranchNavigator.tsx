@@ -302,7 +302,7 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
 
   if (inline) {
     return (
-      <div style={{ height: "100%", display: "flex", alignItems: "stretch" }}>
+      <div style={{ height: 36, display: "flex", alignItems: "center" }}>
         <button
           ref={btnRef}
           onClick={() => onToggle ? onToggle() : setOpenInternal((v) => !v)}
@@ -310,11 +310,12 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
             display: "flex",
             alignItems: "center",
             gap: 6,
-            height: "100%",
+            height: 36,
             padding: "0 12px",
             background: open ? "var(--bg-selected)" : "none",
             border: "none",
-            borderTop: open ? "2px solid var(--accent)" : "2px solid transparent",
+            borderTop: "none",
+            boxShadow: open ? "inset 0 2px 0 var(--accent)" : "none",
             borderRight: "1px solid var(--border)",
             cursor: "pointer",
             color: open ? "var(--text)" : "var(--text-muted)",

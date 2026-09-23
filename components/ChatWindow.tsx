@@ -505,7 +505,7 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
         <div className="chat-empty-state flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8">
           <div className="chat-empty-inner w-full max-w-[820px]">
             <div
-              className="mb-3"
+              className="chat-empty-brand mb-3"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -518,8 +518,9 @@ export function ChatWindow({ session, newSessionCwd, onAgentEnd, onAttentionNeed
             >
               <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
                 <OmpWordmark />
+                <span className="chat-empty-headline" style={{ display: "none" }}>{t("chat.emptyHeadline")}</span>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
+              <div className="chat-empty-versions" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
                   web <span style={{ color: "var(--text)" }}>v{process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"}</span>
                 </span>

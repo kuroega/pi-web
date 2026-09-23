@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useCallback, useEffect, useImperativeHandle, forwardRef, KeyboardEvent } from "react";
+import { createPortal } from "react-dom";
 import type { BuiltinSlashCommandResult, CompactResultInfo, QueuedMessages } from "@/hooks/useAgentSession";
 import type { ModelRoleAssignment, SkillsResponse } from "@/lib/api-types";
 import type { ContextUsage, SlashCommandInfo } from "@/lib/omp-types";
@@ -739,7 +740,12 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
     const ta = textareaRef.current;
     if (!ta) return;
     ta.style.height = "auto";
-    if (value) ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
+    if (value) {
+      const configuredMaxHeight = Number.parseFloat(
+        getComputedStyle(ta).getPropertyValue("--chat-composer-text-max-height"),
+      );
+      ta.style.height = `${Math.min(ta.scrollHeight, Number.isFinite(configuredMaxHeight) ? configuredMaxHeight : 200)}px`;
+    }
   }, [value]);
 
   useEffect(() => {
@@ -1481,9 +1487,11 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             {compactError}
           </div>
         )}
+
+        <div className="chat-composer-surface">
         {/* Image previews */}
         {attachedImages.length > 0 && (
-          <div style={{ display: "flex", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+          <div className="chat-composer-attachment-rail" style={{ display: "flex", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
             {attachedImages.map((img, i) => (
               <div key={i} style={{ position: "relative", flexShrink: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1510,8 +1518,6 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             ))}
           </div>
         )}
-
-        <div className="chat-composer-surface">
         {/* Main input */}
         <div ref={composerAnchorRef} className="chat-composer-anchor" style={{ position: "relative", minWidth: 0 }}>
           {historyMenuOpen && inputHistory.length > 0 && (
@@ -1964,6 +1970,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
             <button
               className="chat-send-button"
               onClick={handleSend}
+              aria-label={t("chat.send")}
               disabled={!value.trim() && !attachedImages.length}
               style={{
                 flexShrink: 0,
@@ -2048,9 +2055,10 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                 <polyline points="21 15 16 10 5 21" />
               </svg>
             </button>
-            {/* Model selector — visible always, disabled while the session or switch is busy */}
-            {(modelOptions.length > 0 || currentName || modelError) && onModelChange && (
-                <div ref={dropdownRef} style={{ position: "relative", flex: isMobile ? "1 1 auto" : undefined, minWidth: 0 }}>
+            {/* Model selector stays mounted while the catalog loads so startup
+                request churn cannot make the primary control disappear. */}
+            {onModelChange && (
+                <div ref={dropdownRef} className="chat-model-selector" style={{ position: "relative", flex: isMobile ? "1 1 auto" : undefined, minWidth: 0 }}>
                   <button
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -2062,6 +2070,8 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                     }}
                     disabled={isStreaming || modelSwitching}
                     aria-busy={modelSwitching || undefined}
+                    aria-haspopup="dialog"
+                    aria-expanded={modelDropdownOpen}
                     style={{
                       display: "flex", alignItems: "center", gap: 6,
                       justifyContent: isMobile ? "flex-start" : undefined,
@@ -2088,7 +2098,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                       e.currentTarget.style.background = modelDropdownOpen ? "var(--bg-hover)" : "none";
                       e.currentTarget.style.color = "var(--text-muted)";
                     }}
-                    title={modelSwitching ? "Switching model" : modelOptions.length > 0 ? "Change model" : "No available models"}
+                    title={modelSwitching ? "Switching model" : modelOptions.length > 0 ? "Change model" : modelError ? "No available models" : "Models are loading"}
                   >
                     {modelSwitching ? (
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" style={{ animation: "spin 0.8s linear infinite", flexShrink: 0 }} aria-hidden="true">
@@ -2105,11 +2115,12 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                       </svg>
                     )}
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-                      {currentName ?? (modelOptions.length > 0 ? "Select model" : "No models")}
+                      {currentName ?? (modelError ? "No models" : "Select model")}
                     </span>
                   </button>
                   {modelDropdownOpen && modelDropdownRect && (() => {
                     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+                    const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
                     // Opening upwards is the norm, but the composer is centred
                     // in a fresh session: fall back to below when the space
                     // above cannot hold the list.
@@ -2123,13 +2134,16 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                     const sidePos: React.CSSProperties = side === "above"
                       ? { bottom: viewportHeight - modelDropdownRect.top + 6 }
                       : { top: modelDropdownRect.bottom + 6 };
-                    // On mobile, pin to a small left margin and cap width to the
-                    // viewport so long model names never push the panel off-screen.
+                    const panelWidth = Math.min(420, viewportWidth - 16);
+                    const panelLeft = Math.min(
+                      Math.max(8, modelDropdownRect.left),
+                      Math.max(8, viewportWidth - panelWidth - 8),
+                    );
                     const panelPos: React.CSSProperties = isMobile
-                      ? { left: 8, right: 8, maxWidth: "calc(100vw - 16px)" }
-                      : { left: modelDropdownRect.left, width: "max-content", minWidth: modelDropdownRect.width };
-                    return (
-                      <div ref={modelDropdownPanelRef} style={{
+                      ? { left: 8, right: 8 }
+                      : { left: panelLeft, width: panelWidth };
+                    return createPortal((
+                      <div ref={modelDropdownPanelRef} className="chat-model-dropdown" role="dialog" aria-label={t("chat.allModels")} style={{
                       position: "fixed",
                       ...sidePos,
                       ...panelPos,
@@ -2300,7 +2314,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                         ))}
                       </div>
                     </div>
-                    );
+                    ), document.body);
                   })()}
                 </div>
             )}
@@ -2327,6 +2341,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
           }}>
             {isMobile && (
               <button
+                className="chat-more-controls"
                 type="button"
                  title={controlsMenuOpen ? undefined : t("chat.moreControls")}
                  aria-label={t("chat.moreControls")}
@@ -2370,7 +2385,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput({
                 {t("chat.moreControls")}
               </button>
             )}
-            <div style={{
+            <div className="chat-secondary-controls" style={{
               display: isMobile ? (controlsMenuOpen ? "flex" : "none") : "flex",
               alignItems: "center",
               gap: isMobile ? 1 : 2,

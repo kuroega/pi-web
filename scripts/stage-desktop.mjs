@@ -63,6 +63,11 @@ if (!existsSync(join(server, ".next", "BUILD_ID"))) {
   process.exit(1);
 }
 
+// instrumentation.ts dynamically loads these runtime modules from the
+// server's working directory. Copy them after the application build so the
+// staged sources are not included in the root TypeScript project during build.
+cpSync(join(root, "lib"), join(server, "lib"), { recursive: true });
+
 // 4. drop caches from the staged output (regenerated on the next build)
 rmSync(join(server, ".next", "cache"), { recursive: true, force: true });
 rmSync(join(server, ".next", "dev"), { recursive: true, force: true });
@@ -147,7 +152,12 @@ const nativeVariants =
 for (const [name, host] of nativeVariants) {
   const src = join(root, "node_modules", name);
   if (existsSync(src)) {
-    cpSync(src, join(server, "node_modules", name), { recursive: true });
+    // Bun's Windows copy can fail with EBUSY when the production install
+    // already created the package directory. Replace it as a whole instead
+    // of recursively copying over files that may still be held open.
+    const dest = join(server, "node_modules", name);
+    rmSync(dest, { recursive: true, force: true });
+    cpSync(src, dest, { recursive: true });
     continue;
   }
   let version;

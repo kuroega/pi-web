@@ -4,7 +4,18 @@ import { useEffect } from "react";
 
 export function PwaRegistration() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      void navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+        // A previously installed production worker can keep serving stale
+        // assets until the current document is navigated once more.
+        if (hadController) window.location.reload();
+      });
       return;
     }
 

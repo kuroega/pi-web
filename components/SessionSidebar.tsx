@@ -5,6 +5,7 @@ import type { SessionInfo } from "@/lib/types";
 import { loadExplorerOpen, saveExplorerOpen } from "@/lib/file-explorer-state";
 import { dispatchSessionRowContextMenu } from "@/lib/session-row-context-menu";
 import { skillExpansionToCommand } from "@/lib/slash-display";
+import { runAfterCriticalStartup } from "@/lib/startup-priority";
 import { useI18n } from "@/hooks/useI18n";
 import { DirectoryPicker } from "./DirectoryPicker";
 import { FileExplorer, type FileExplorerHandle } from "./FileExplorer";
@@ -490,6 +491,8 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
   const sessionRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const explorerRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileExplorerRef = useRef<FileExplorerHandle>(null);
+  const [criticalStartupReady, setCriticalStartupReady] = useState(false);
+  useEffect(() => runAfterCriticalStartup(() => setCriticalStartupReady(true)), []);
   useEffect(() => {
     setCollapsedProjects(loadCollapsedProjects());
     setRemovedProjects(loadRemovedProjects());
@@ -558,6 +561,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
   }, [unreadSessionIds]);
 
   useEffect(() => {
+    if (!criticalStartupReady) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let controller: AbortController | null = null;
@@ -606,7 +610,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
       controller = null;
     };
 
-    void poll();
+    schedule();
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       stopped = true;
@@ -614,7 +618,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
       controller?.abort();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, []);
+  }, [criticalStartupReady]);
 
   useEffect(() => {
     const previous = previousRunningSessionIdsRef.current;
@@ -657,10 +661,14 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
   }, [explorerRefreshKey]);
 
   useEffect(() => {
-    fetch("/api/home").then((r) => r.json()).then((d: { home?: string }) => {
-      if (d.home) setHomeDir(d.home);
-    }).catch(() => {});
-  }, []);
+    if (!criticalStartupReady) return;
+    const timer = window.setTimeout(() => {
+      fetch("/api/home").then((r) => r.json()).then((d: { home?: string }) => {
+        if (d.home) setHomeDir(d.home);
+      }).catch(() => {});
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [criticalStartupReady]);
 
   const restoredRef = useRef(false);
 
@@ -703,6 +711,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
       setWorktreeState(null);
       return;
     }
+    if (!criticalStartupReady) return;
     let cancelled = false;
     fetch(`/api/worktrees?cwd=${encodeURIComponent(selectedCwd)}`)
       .then((r) => r.json())
@@ -726,7 +735,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
         }
       });
     return () => { cancelled = true; };
-  }, [selectedCwd, wtRefreshKey, refreshKey]);
+  }, [criticalStartupReady, selectedCwd, wtRefreshKey, refreshKey]);
 
   // Auto-select cwd and restore session from URL on first load
   useEffect(() => {
@@ -1875,7 +1884,7 @@ export function SessionSidebar({ selectedSessionId, optimisticSession, onSelectS
               )}
             </ToolbarIconButton>
           </div>
-          {explorerOpen && (
+          {explorerOpen && criticalStartupReady && (
             <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
               <FileExplorer
                 ref={fileExplorerRef}
@@ -1912,6 +1921,7 @@ function ArchivedSessionsSection({
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
 
   useEffect(() => {
+    if (!open) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -1924,7 +1934,7 @@ function ArchivedSessionsSection({
       }
     })();
     return () => { cancelled = true; };
-  }, [refreshKey]);
+  }, [open, refreshKey]);
 
   const restore = useCallback(async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
