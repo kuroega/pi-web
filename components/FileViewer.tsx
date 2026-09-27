@@ -10,6 +10,7 @@ import { vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import ReactMarkdown from "react-markdown";
 import { useTheme } from "@/hooks/useTheme";
+import { referencePaperSyntax } from "@/lib/reference-paper-syntax";
 import {
   DOCX_PREVIEW_MAX_BYTES,
   getFileExt,
@@ -367,14 +368,14 @@ function DiffView({ patch }: { patch: string }) {
         const lines = seg.lines.map((line, li) => {
           const bg =
             line.type === "added"
-              ? "rgba(0,200,80,0.12)"
+              ? "var(--diff-added-bg, rgba(0,200,80,0.12))"
               : line.type === "removed"
-              ? "rgba(240,60,60,0.14)"
+              ? "var(--diff-removed-bg, rgba(240,60,60,0.14))"
               : "transparent";
           const prefix =
             line.type === "added" ? "+" : line.type === "removed" ? "-" : " ";
           const prefixColor =
-            line.type === "added" ? "#4ade80" : line.type === "removed" ? "#f87171" : "var(--text-dim)";
+            line.type === "added" ? "var(--diff-added, #4ade80)" : line.type === "removed" ? "var(--diff-removed, #f87171)" : "var(--text-dim)";
 
           return (
             <div
@@ -385,9 +386,9 @@ function DiffView({ patch }: { patch: string }) {
                 minWidth: "100%",
                 background: bg,
                 borderLeft: line.type === "added"
-                  ? "3px solid #4ade80"
+                  ? "3px solid var(--diff-added, #4ade80)"
                   : line.type === "removed"
-                  ? "3px solid #f87171"
+                  ? "3px solid var(--diff-removed, #f87171)"
                   : "3px solid transparent",
               }}
             >
@@ -414,7 +415,7 @@ function DiffView({ patch }: { patch: string }) {
                   flexShrink: 0,
                   padding: "0 8px 0 0",
                   whiteSpace: "pre",
-                  color: "var(--text)",
+                  color: line.type === "added" ? "var(--diff-added, var(--text))" : line.type === "removed" ? "var(--diff-removed, var(--text))" : "var(--diff-context, var(--text))",
                 }}
               >
                 {line.text || "\u00a0"}
@@ -1137,7 +1138,7 @@ function TextFileViewer({
   onStateChange,
   watchEnabled = true,
 }: Props) {
-  const { isDark } = useTheme();
+  const { isDark, theme } = useTheme();
   const { t } = useI18n();
   const [data, setData] = useState<FileData | null>(null);
   const [gitDiff, setGitDiff] = useState<GitFileDiffResponse | null>(null);
@@ -1383,7 +1384,7 @@ function TextFileViewer({
       <SyntaxHighlighter
         className={wrapLines ? "file-source-view is-wrapped" : "file-source-view"}
         language={language === "text" ? "plaintext" : language}
-        style={isDark ? vscDarkPlus : vs}
+        style={theme === "reference-paper" ? referencePaperSyntax : isDark ? vscDarkPlus : vs}
         showLineNumbers
         lineNumberStyle={{
           ...FILE_LINE_NUMBER_STYLE,
@@ -1413,7 +1414,7 @@ function TextFileViewer({
         {viewerContent}
       </SyntaxHighlighter>
     ),
-    [isDark, language, viewerContent, wrapLines],
+    [isDark, theme, language, viewerContent, wrapLines],
   );
   const lightweightSourceLines = useMemo(
     () => useLightweightSource ? sourceLines.map((line, lineIndex) => (

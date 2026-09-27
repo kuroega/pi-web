@@ -1,5 +1,6 @@
 @import "@xterm/xterm/css/xterm.css";
 @import "tailwindcss";
+@import "./reference-paper.css";
 /* demo/ is a separate project; keep its sources out of this app's class scan. */
 @source not "../demo";
 

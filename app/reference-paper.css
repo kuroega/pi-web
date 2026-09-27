@@ -1,0 +1,79 @@
+/* Port of reference-paper.json. Preserve the source's exact neutral values,
+   including its intentionally faint dim text; this is not the Light palette.
+   Web-only chrome uses export.infoBg. Conversation/tool cards stay paper-white. */
+html[data-theme="reference-paper"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-panel: #fafafa;
+  --bg-hover: #fafafa;
+  --bg-selected: #e5e5e5;
+  --border: #d4d4d4;
+  --text: #262626;
+  --text-muted: #737373;
+  --text-dim: #a3a3a3;
+  --accent: #171717;
+  --accent-hover: #262626;
+  --accent-contrast: #ffffff;
+  --user-bg: #ffffff;
+  --assistant-bg: #ffffff;
+  --tool-bg: #ffffff;
+  --bg-subtle: #fafafa;
+  --message-border: #d4d4d4;
+  --custom-message-bg: #ffffff;
+  --custom-message-label: #171717;
+  --status-error: #171717;
+  --status-success: #171717;
+  --status-warning: #262626;
+  --status-bg: #ffffff;
+  --status-border: #d4d4d4;
+  --tool-surface: #ffffff;
+  --tool-title: #171717;
+  --tool-output: #737373;
+  --diff-added: #171717;
+  --diff-removed: #737373;
+  --diff-context: #737373;
+  --diff-added-bg: #ffffff;
+  --diff-removed-bg: #ffffff;
+  --diff-hunk-bg: #fafafa;
+  --thinking-active: #737373;
+  --code-bg: #ffffff;
+}
+
+[data-theme="reference-paper"] ::selection {
+  background: #e5e5e5;
+  color: #262626;
+}
+[data-theme="reference-paper"] mark {
+  background: #d4d4d4;
+  color: #171717;
+}
+[data-theme="reference-paper"] ::-webkit-scrollbar-track {
+  background: #e5e5e5;
+}
+[data-theme="reference-paper"] ::-webkit-scrollbar-thumb {
+  background-color: #a3a3a3;
+}
+[data-theme="reference-paper"] .markdown-body :is(h1, h2, h3, h4, h5, h6, strong, .markdown-inline-code) {
+  color: #171717;
+}
+[data-theme="reference-paper"] .markdown-body a,
+[data-theme="reference-paper"] .markdown-body li::marker {
+  color: #262626;
+}
+[data-theme="reference-paper"] .markdown-body a {
+  text-decoration-color: #737373;
+}
+[data-theme="reference-paper"] .markdown-body blockquote {
+  color: #737373;
+  border-color: #d4d4d4;
+  background: #ffffff;
+}
+[data-theme="reference-paper"] .markdown-body hr {
+  background: #e5e5e5;
+}
+[data-theme="reference-paper"] .markdown-code-block {
+  border-color: #d4d4d4;
+}
+[data-theme="reference-paper"] .markdown-code-header {
+  background: #fafafa;
+}

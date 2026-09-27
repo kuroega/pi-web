@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "@/hooks/useTheme";
+import { referencePaperSyntax } from "@/lib/reference-paper-syntax";
 import { useI18n } from "@/hooks/useI18n";
 import { copyText } from "@/lib/clipboard";
 
@@ -35,13 +36,13 @@ type RenderState =
   | { key: string; status: "ready"; svg: string };
 
 export function MermaidBlock({ code, isStreaming, defaultPreview = false }: MermaidBlockProps) {
-  const { isDark } = useTheme();
+  const { isDark, theme } = useTheme();
   const { t } = useI18n();
   const [showPreview, setShowPreview] = useState(defaultPreview);
   const [renderState, setRenderState] = useState<RenderState | null>(null);
   const [zoomOpen, setZoomOpen] = useState(false);
   const previewRef = useRef<HTMLButtonElement>(null);
-  const currentKey = `${isDark ? "dark" : "light"}\n${code}`;
+  const currentKey = `${theme}\n${code}`;
   const previewVisible = showPreview && !isStreaming;
 
   useEffect(() => {
@@ -56,7 +57,25 @@ export function MermaidBlock({ code, isStreaming, defaultPreview = false }: Merm
         startOnLoad: false,
         securityLevel: "strict",
         suppressErrorRendering: true,
-        theme: isDark ? "dark" : "default",
+        theme: theme === "reference-paper" ? "base" : isDark ? "dark" : "default",
+        themeVariables: theme === "reference-paper" ? {
+          background: "#ffffff",
+          primaryColor: "#ffffff",
+          primaryTextColor: "#262626",
+          primaryBorderColor: "#d4d4d4",
+          secondaryColor: "#fafafa",
+          secondaryTextColor: "#262626",
+          secondaryBorderColor: "#d4d4d4",
+          tertiaryColor: "#e5e5e5",
+          tertiaryTextColor: "#262626",
+          tertiaryBorderColor: "#d4d4d4",
+          lineColor: "#737373",
+          textColor: "#262626",
+          edgeLabelBackground: "#ffffff",
+          noteBkgColor: "#fafafa",
+          noteTextColor: "#262626",
+          noteBorderColor: "#d4d4d4",
+        } : undefined,
       });
 
       const parsed = await mermaid.parse(code, { suppressErrors: true });
@@ -79,7 +98,7 @@ export function MermaidBlock({ code, isStreaming, defaultPreview = false }: Merm
     return () => {
       cancelled = true;
     };
-  }, [code, currentKey, isDark, previewVisible]);
+  }, [code, currentKey, isDark, theme, previewVisible]);
 
   const previewButton = useMemo(() => (
     <button
@@ -267,7 +286,7 @@ interface CodeBlockProps {
  * every chunk, which is the single most expensive part of streamed rendering.
  */
 export const CodeBlock = memo(function CodeBlock({ code, lang, headerAction, isStreaming }: CodeBlockProps) {
-  const { isDark } = useTheme();
+  const { isDark, theme } = useTheme();
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
@@ -300,7 +319,7 @@ export const CodeBlock = memo(function CodeBlock({ code, lang, headerAction, isS
             fontSize: "calc(12.5px + var(--chat-font-size-offset, 0px))",
             lineHeight: 1.62,
             overflowX: "auto",
-            background: "color-mix(in srgb, var(--bg) 92%, var(--bg-panel))",
+            background: "var(--code-bg, color-mix(in srgb, var(--bg) 92%, var(--bg-panel)))",
           }}
         >
           <code style={{ fontFamily: "var(--font-mono)" }}>{code}</code>
@@ -308,7 +327,7 @@ export const CodeBlock = memo(function CodeBlock({ code, lang, headerAction, isS
       ) : (
         <SyntaxHighlighter
           language={lang || "text"}
-          style={isDark ? vscDarkPlus : vs}
+          style={theme === "reference-paper" ? referencePaperSyntax : isDark ? vscDarkPlus : vs}
           showLineNumbers
           lineNumberStyle={{ color: "var(--text-dim)", fontStyle: "normal" }}
           customStyle={{
@@ -317,7 +336,7 @@ export const CodeBlock = memo(function CodeBlock({ code, lang, headerAction, isS
             fontSize: "calc(12.5px + var(--chat-font-size-offset, 0px))",
             lineHeight: 1.62,
             borderRadius: 0,
-            background: "color-mix(in srgb, var(--bg) 92%, var(--bg-panel))",
+            background: "var(--code-bg, color-mix(in srgb, var(--bg) 92%, var(--bg-panel)))",
           }}
           codeTagProps={{ style: { fontFamily: "var(--font-mono)" } }}
         >
